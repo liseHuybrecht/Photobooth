@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f3ef">
+
+    <title>Your Photo</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main class="page">
+
+        <header class="header">
+            <p class="eyebrow">YOUR PHOTO COLLECTION</p>
+
+            <h1>Find your photo.</h1>
+
+            <p class="intro">
+                Enter your 13-digit code to access your photo.
+            </p>
+        </header>
+
+        <form id="lookup-form">
+
+            <label for="photo-code">
+                Your 13-digit code
+            </label>
+
+            <input
+                id="photo-code"
+                name="code"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="13"
+                pattern="[0-9]{13}"
+                placeholder="0000000000000"
+                required
+            >
+
+            <button id="submit-button" type="submit">
+                Find my photo
+            </button>
+
+        </form>
+
+        <p id="status" role="status" aria-live="polite"></p>
+
+        <section id="photo-result" hidden>
+
+            <img id="photo" alt="Your retrieved photo">
+
+            <a id="download-button" download="my-photo.jpg">
+                Download photo
+            </a>
+
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
