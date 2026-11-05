@@ -1,13 +1,4 @@
-// --------------------------------------------------
-// CONFIGURATION
-// --------------------------------------------------
-
-const API_URL = "YOUR_RENDER_API_URL";
-
-
-// --------------------------------------------------
-// HTML ELEMENT REFERENCES
-// --------------------------------------------------
+const API_URL = "https://lisehuybrecht.github.io/Photobooth/";
 
 const form = document.getElementById("lookup-form");
 const codeInput = document.getElementById("photo-code");
@@ -18,122 +9,108 @@ const photoResult = document.getElementById("photo-result");
 const photo = document.getElementById("photo");
 const downloadButton = document.getElementById("download-button");
 
-
-// --------------------------------------------------
-// FORM SUBMISSION
-// --------------------------------------------------
-
 form.addEventListener("submit", async (event) => {
+	event.preventDefault();
 
-    event.preventDefault();
+	const code = codeInput.value.trim();
 
-    // Read the visitor's input.
-    const code = codeInput.value.trim();
+	// ============================================
+	// VALIDATE INPUT
+	// ============================================
 
-    // Validate the 13-digit code.
-    if (!/^\d{13}$/.test(code)) {
-        status.textContent = "Please enter a valid 13-digit code.";
-        return;
-    }
+	if (!/^\d{13}$/.test(code)) {
+		status.textContent = "Please enter a valid 13-digit code.";
+		return;
+	}
 
-    // Update interface while waiting for API.
-    submitButton.disabled = true;
-    status.textContent = "Searching for your photo...";
-    photoResult.hidden = true;
+	// ============================================
+	// UPDATE INTERFACE
+	// ============================================
 
+	submitButton.disabled = true;
+	status.textContent = "Searching for your photo...";
+	photoResult.hidden = true;
 
-    try {
+	try {
+		// ========================================
+		// REQUEST JSON FROM BACKEND
+		// ========================================
 
-        // --------------------------------------------------
-        // SEND CODE TO RENDER BACKEND
-        // --------------------------------------------------
+		const response = await fetch(API_URL, {
+			method: "POST",
 
-        const response = await fetch(API_URL, {
-            method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+			body: JSON.stringify({
+				code: code,
+			}),
+		});
 
-            body: JSON.stringify({
-                code: code
-            })
-        });
+		if (!response.ok) {
+			throw new Error("API request failed: " + response.status);
+		}
 
+		// ========================================
+		// READ JSON RESPONSE
+		// ========================================
 
-        if (!response.ok) {
-            throw new Error("API request failed: " + response.status);
-        }
+		const data = await response.json();
 
+		if (!Array.isArray(data)) {
+			throw new Error("Unexpected JSON response format.");
+		}
 
-        // --------------------------------------------------
-        // READ JSON RESPONSE
-        // --------------------------------------------------
+		// ========================================
+		// FIND ENTRY WITH MATCHING CODE
+		// ========================================
 
-        const data = await response.json();
+		const matchingEntry = data.find(
+			(entry) => String(entry.code).trim() === code,
+		);
 
+		if (!matchingEntry) {
+			throw new Error("No photo found for this code.");
+		}
 
-        if (!Array.isArray(data) || data.length === 0) {
-            throw new Error("No entries were returned.");
-        }
+		if (!matchingEntry.image || typeof matchingEntry.image !== "string") {
+			throw new Error("The matching entry has no image.");
+		}
 
+		// ========================================
+		// DISPLAY MATCHING IMAGE
+		// ========================================
 
-        // --------------------------------------------------
-        // SELECT ONLY THE LAST ENTRY
-        // --------------------------------------------------
+		const imageData = matchingEntry.image;
 
-        const lastEntry = data[data.length - 1];
+		if (imageData.startsWith("data:")) {
+			photo.src = imageData;
+		} else {
+			photo.src = "data:image/jpeg;base64," + imageData;
+		}
 
+		// ========================================
+		// PREPARE DOWNLOAD
+		// ========================================
 
-        if (!lastEntry.image) {
-            throw new Error("The last entry does not contain an image.");
-        }
+		downloadButton.href = photo.src;
+		downloadButton.download = "photo-" + matchingEntry.id + ".jpg";
 
+		// ========================================
+		// SHOW RESULT
+		// ========================================
 
-        // --------------------------------------------------
-        // DISPLAY IMAGE
-        // --------------------------------------------------
+		photoResult.hidden = false;
+		status.textContent = "Your photo is ready.";
+	} catch (error) {
+		console.error(error);
 
-        let imageData = lastEntry.image;
-
-        if (imageData.startsWith("data:")) {
-
-            photo.src = imageData;
-
-        } else {
-
-            photo.src = "data:image/jpeg;base64," + imageData;
-
-        }
-
-
-        // --------------------------------------------------
-        // DOWNLOAD IMAGE
-        // --------------------------------------------------
-
-        downloadButton.href = photo.src;
-
-        downloadButton.download = "photo-" + lastEntry.id + ".jpg";
-
-
-        // Show the image section.
-        photoResult.hidden = false;
-
-        status.textContent = "Your photo is ready.";
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        status.textContent =
-            "Unable to retrieve your photo. Please try again.";
-
-    } finally {
-
-        // Re-enable submit button.
-        submitButton.disabled = false;
-
-    }
-
+		status.textContent =
+			error.message === "No photo found for this code."
+				? "No photo was found for that code."
+				: "Unable to retrieve your photo. Please try again.";
+	} finally {
+		submitButton.disabled = false;
+	}
 });
