@@ -37,7 +37,8 @@ form.addEventListener("submit", async (event) => {
 		// ========================================
 
 		const response = await fetch(API_URL, {
-			credentials: "include",
+			method: "GET",
+
 		});
 
 		if (!response.ok) {
