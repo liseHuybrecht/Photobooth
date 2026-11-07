@@ -37,7 +37,7 @@ form.addEventListener("submit", async (event) => {
 		// ========================================
 
 		const response = await fetch(API_URL, {
-			method: "GET",
+			method: "GET"
 		});
 
 		if (!response.ok) {
@@ -53,24 +53,9 @@ form.addEventListener("submit", async (event) => {
 		// READ JSON RESPONSE
 		// ========================================
 
-		const responseText = await response.text();
+		const data = await response.json();
 
-		console.log("API response status:", response.status);
-		console.log(
-			"API response content type:",
-			response.headers.get("content-type"),
-		);
-		console.log("API response body:", responseText);
-
-		let data;
-
-		try {
-			data = JSON.parse(responseText);
-		} catch (error) {
-			throw new Error(
-				"Render did not return valid JSON. Check the API response in the console.",
-			);
-		}
+		console.log(data);
 
 		if (!Array.isArray(data)) {
 			throw new Error("Unexpected JSON response format.");
