@@ -55,6 +55,8 @@ form.addEventListener("submit", async (event) => {
 
 		const data = await response.json();
 
+		console.log(data);
+
 		if (!Array.isArray(data)) {
 			throw new Error("Unexpected JSON response format.");
 		}
