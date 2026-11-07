@@ -1,4 +1,4 @@
-const API_URL = "https://lisehuybrecht.github.io/Photobooth/";
+const API_URL = "https://photobooth-backend-05q5.onrender.com/images/";
 
 const form = document.getElementById("lookup-form");
 const codeInput = document.getElementById("photo-code");
