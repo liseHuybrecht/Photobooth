@@ -38,10 +38,14 @@ form.addEventListener("submit", async (event) => {
 
 		const response = await fetch(API_URL, {
 			method: "GET",
-
 		});
 
 		if (!response.ok) {
+			const errorDetails = await response.text();
+
+			console.error("HTTP status:", response.status);
+			console.error("Response:", errorDetails);
+
 			throw new Error("API request failed: " + response.status);
 		}
 
